@@ -51,7 +51,7 @@ Cell Maze::getBestCell() {
             }
         }
     }
-
+    
     delete[] neighborCells;
     return bestCell;
 }
