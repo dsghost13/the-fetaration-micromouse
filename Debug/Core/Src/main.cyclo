@@ -1,0 +1,21 @@
+../Core/Inc/encoders.h:14:3:Encoders::Encoders()	1
+../Core/Inc/encoders.h:20:8:void Encoders::HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef*)	3
+../Core/Inc/encoders.h:30:8:void Encoders::initialize()	1
+../Core/Inc/encoders.h:36:8:void Encoders::reset()	1
+../Core/Inc/encoders.h:69:8:void Encoders::update_encoder_counts()	1
+../Core/Src/main.cpp:117:6:void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef*)	1
+../Core/Src/main.cpp:121:13:void ADC1_Select_CH4()	2
+../Core/Src/main.cpp:133:13:void ADC1_Select_CH9()	2
+../Core/Src/main.cpp:145:10:uint16_t measure_dist(dist_t)	3
+../Core/Src/main.cpp:188:5:int main()	1
+../Core/Src/main.cpp:245:6:void SystemClock_Config()	4
+../Core/Src/main.cpp:292:13:void MX_ADC1_Init()	3
+../Core/Src/main.cpp:339:13:void MX_ADC2_Init()	3
+../Core/Src/main.cpp:386:13:void MX_TIM2_Init()	7
+../Core/Src/main.cpp:449:13:void MX_TIM3_Init()	3
+../Core/Src/main.cpp:498:13:void MX_TIM4_Init()	3
+../Core/Src/main.cpp:547:13:void MX_GPIO_Init()	1
+../Core/Src/main.cpp:599:6:void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef*)	1
+../Core/Src/main.cpp:608:6:void Error_Handler()	1
+../Core/Src/main.cpp:617:1:void __static_initialization_and_destruction_0()	1
+../Core/Src/main.cpp:617:1:cpp)	1
