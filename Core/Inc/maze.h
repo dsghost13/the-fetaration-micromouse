@@ -55,7 +55,7 @@ public:
         delete[] goalPos;
     }
 
-    Cell* getNeighborCells(Coord pos) {
+    Cell* get_neighbor_cells(Coord pos) {
         Cell* neighborCells = new Cell[4];
         for (int i = 0; i < 4; ++i) {
             Coord neighborPos = getNeighborPos(pos, i);
@@ -68,7 +68,7 @@ public:
     }
 
     Cell get_best_cell() {
-        Cell* neighborCells = getNeighborCells(mouse.pos);
+        Cell* neighborCells = get_neighbor_cells(mouse.pos);
         Cell bestCell;
 
         for (int i = 0; i < 4; ++i) {
@@ -98,31 +98,30 @@ public:
         mouse.pos.y += NEIGHBOR_DISTANCES[mouse.dir][1];
     }
 
-    void setWall(int offset) {
+    void set_wall(int offset) {
         int wallDir = (mouse.dir + offset) % 4;
         int oppDir = (wallDir + 2) % 4;
         Coord neighborPos = getNeighborPos(mouse.pos, wallDir);
 
         cellWalls[mouse.pos.x][mouse.pos.y] |= (1 << wallDir);
-        API::setWall(mouse.pos.x, mouse.pos.y, dirToChar(wallDir));
 
         if (isValidPos(neighborPos)) {
             cellWalls[neighborPos.x][neighborPos.y] |= (1 << oppDir);
         }
     }
 
-    void updateWalls() {
-        if (API::wallFront()) setWall(0);
-        if (API::wallLeft()) setWall(1);
-        if (API::wallRight()) setWall(3);
+    void update_walls() {
+        if (API::wallFront()) set_wall(0);
+        if (API::wallLeft()) set_wall(1);
+        if (API::wallRight()) set_wall(3);
     }
 
-    void updateSimulator() {
-        updateWalls();
+    void update_maze() {
+        update_walls();
         Cell bestCell = get_best_cell();
-        int turnsNeeded = (bestCell.dir - mouse.dir + 4) % 4;
+        int turns = (bestCell.dir - mouse.dir + 4) % 4;
 
-        switch (turnsNeeded) {
+        switch (turns) {
             case 1: rotateCCW(); API::turnLeft(); break;
             case 2: rotateCCW(2); API::turnRight(); API::turnRight(); break;
             case 3: rotateCCW(3); API::turnRight(); break;
@@ -182,6 +181,4 @@ private:
         }
     }
 };
-
-extern Mouse mouse;
 

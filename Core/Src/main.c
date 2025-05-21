@@ -21,68 +21,17 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "battery.h"
-#include "encoders.h"
-#include "maze.h"
-#include "motors.h"
-#include "mouse.h"
-#include "profile.h"
-#include "sensors.h"
-/* USER CODE END Includes
- *  */
+
+/* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-typedef enum {
-	DIST_L,
-	DIST_R,
-	DIST_FL,
-	DIST_FR
-} dist_t;
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-const float LOOP_FREQUENCY = 1000.0;
-const float LOOP_INTERVAL = 1.0 / LOOP_FREQUENCY;
 
-const float WHEEL_DIAMETER = 32.5;
-const float ENCODER_PULSES = 12.0;
-const float GEAR_RATIO = 50.0;
-
-const float MOUSE_RADIUS = 36.7;
-const float TRACK_WIDTH = 10.0;
-
-const float PI = 3.141592653589793238462643383;
-const float MM_PER_COUNT = PI * WHEEL_DIAMETER / (ENCODER_PULSES * GEAR_RATIO);
-const float MM_PER_COUNT_RIGHT = MM_PER_COUNT;
-const float MM_PER_COUNT_LEFT = MM_PER_COUNT;
-const float DEG_PER_MM_DIF = (180.0 / (2 * MOUSE_RADIUS * PI));
-
-const float FULL_CELL_MM = 185.0;
-const float HALF_CELL = FULL_CELL_MM / 2;
-//const float DIAG_CELL = sqrt(2 * HALF_CELL * HALF_CELL);
-const float BACK_TO_MOTOR = 32.23;
-const float BACK_WALL_TO_CENTER = HALF_CELL - BACK_TO_MOTOR;
-const float SENSING_POSITION = 175.0;
-
-const float MAX_ADC = 4095.0;
-const float VREFINT = 1.2;
-
-const int SEARCH_SPEED = 400;
-const int SEARCH_ACCELERATION = 1500;
-const int SMOOTH_TURN_SPEED = 50;
-const int FAST_TURN_SPEED = 350;
-const int FAST_SPEED = 550;
-const int FAST_ACCELERATION = 1500;
-
-const int NOM_FORWARD = 200;
-const int NOM_DIAGONAL = 100;
-
-const int MOTOR_MAX_PWM = 100;
-
-const int MAZE_SIZE = 16;
-const int MAX_COST = 255;
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -92,19 +41,13 @@ const int MAX_COST = 255;
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
-ADC_HandleTypeDef hadc2;
 
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
 
 /* USER CODE BEGIN PV */
-uint16_t dist_L;
-uint16_t dist_R;
-uint16_t dist_FL;
-uint16_t dist_FR;
 
-Encoders encoders = Encoders();
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -114,116 +57,13 @@ static void MX_TIM2_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM4_Init(void);
-static void MX_ADC2_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) {
-    encoders.HAL_TIM_IC_CaptureCallback(htim);
-}
 
-static void ADC1_Select_CH4(void) {
-	ADC_ChannelConfTypeDef sConfig = {0};
-
-	sConfig.Channel = ADC_CHANNEL_4;
-	sConfig.Rank = ADC_REGULAR_RANK_1;
-	sConfig.SamplingTime = ADC_SAMPLETIME_7CYCLES_5;
-	if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-	{
-		Error_Handler();
-	}
-}
-
-static void ADC1_Select_CH5(void) {
-	ADC_ChannelConfTypeDef sConfig = {0};
-
-	sConfig.Channel = ADC_CHANNEL_5;
-	sConfig.Rank = ADC_REGULAR_RANK_1;
-	sConfig.SamplingTime = ADC_SAMPLETIME_7CYCLES_5;
-	if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-	{
-		Error_Handler();
-	}
-}
-
-static void ADC1_Select_CH8(void) {
-	ADC_ChannelConfTypeDef sConfig = {0};
-
-	sConfig.Channel = ADC_CHANNEL_8;
-	sConfig.Rank = ADC_REGULAR_RANK_1;
-	sConfig.SamplingTime = ADC_SAMPLETIME_7CYCLES_5;
-	if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-	{
-		Error_Handler();
-	}
-}
-
-static void ADC1_Select_CH9(void) {
-	ADC_ChannelConfTypeDef sConfig = {0};
-
-	sConfig.Channel = ADC_CHANNEL_9;
-	sConfig.Rank = ADC_REGULAR_RANK_1;
-	sConfig.SamplingTime = ADC_SAMPLETIME_7CYCLES_5;
-	if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-	{
-		Error_Handler();
-	}
-}
-
-uint16_t measure_dist(dist_t dist) {
-	GPIO_TypeDef* emitter_port;
-	uint16_t emitter_pin;
-	GPIO_TypeDef* receiver_port;
-	uint16_t receiver_pin;
-
-	switch (dist) {
-		case DIST_L:
-			emitter_port	= EMIT_L_GPIO_Port;
-			emitter_pin		= EMIT_L_Pin;
-			receiver_port	= RECIV_L_GPIO_Port;
-			receiver_pin	= RECIV_L_Pin;
-			ADC1_Select_CH8();
-			break;
-		case DIST_R:
-			emitter_port	= EMIT_R_GPIO_Port;
-			emitter_pin		= EMIT_R_Pin;
-			receiver_port	= RECIV_R_GPIO_Port;
-			receiver_pin	= RECIV_R_Pin;
-			ADC1_Select_CH5();
-			break;
-		case DIST_FL:
-			emitter_port	= EMIT_FL_GPIO_Port;
-			emitter_pin		= EMIT_FL_Pin;
-			receiver_port	= RECIV_FL_GPIO_Port;
-			receiver_pin	= RECIV_FL_Pin;
-			ADC1_Select_CH9();
-			break;
-		case DIST_FR:
-			emitter_port	= EMIT_FR_GPIO_Port;
-			emitter_pin		= EMIT_FR_Pin;
-			receiver_port	= RECIV_FR_GPIO_Port;
-			receiver_pin	= RECIV_FR_Pin;
-			ADC1_Select_CH4();
-			break;
-		default:
-			break;
-	}
-
-	HAL_GPIO_WritePin(emitter_port, emitter_pin, GPIO_PIN_SET);
-	HAL_Delay(5);
-
-	HAL_ADC_Start(&hadc1);
-	HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
-	uint16_t adc_val = HAL_ADC_GetValue(&hadc1);
-	HAL_ADC_Stop(&hadc1);
-
-	HAL_GPIO_WritePin(emitter_port, emitter_pin, GPIO_PIN_RESET);
-
-	return adc_val;
-}
 /* USER CODE END 0 */
 
 /**
@@ -259,25 +99,14 @@ int main(void)
   MX_ADC1_Init();
   MX_TIM3_Init();
   MX_TIM4_Init();
-  MX_ADC2_Init();
   /* USER CODE BEGIN 2 */
-  HAL_TIM_Base_Start_IT(&htim2);
-  encoders.initialize();
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-
-
-
   while (1)
   {
-	dist_L = measure_dist(DIST_L);
-	dist_R = measure_dist(DIST_R);
-	dist_FR = measure_dist(DIST_FR);
-	dist_FL = measure_dist(DIST_FL);
-//	HAL_Delay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -375,53 +204,6 @@ static void MX_ADC1_Init(void)
   /* USER CODE BEGIN ADC1_Init 2 */
 
   /* USER CODE END ADC1_Init 2 */
-
-}
-
-/**
-  * @brief ADC2 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_ADC2_Init(void)
-{
-
-  /* USER CODE BEGIN ADC2_Init 0 */
-
-  /* USER CODE END ADC2_Init 0 */
-
-  ADC_ChannelConfTypeDef sConfig = {0};
-
-  /* USER CODE BEGIN ADC2_Init 1 */
-
-  /* USER CODE END ADC2_Init 1 */
-
-  /** Common config
-  */
-  hadc2.Instance = ADC2;
-  hadc2.Init.ScanConvMode = ADC_SCAN_DISABLE;
-  hadc2.Init.ContinuousConvMode = DISABLE;
-  hadc2.Init.DiscontinuousConvMode = DISABLE;
-  hadc2.Init.ExternalTrigConv = ADC_SOFTWARE_START;
-  hadc2.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc2.Init.NbrOfConversion = 1;
-  if (HAL_ADC_Init(&hadc2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure Regular Channel
-  */
-  sConfig.Channel = ADC_CHANNEL_9;
-  sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
-  if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN ADC2_Init 2 */
-
-  /* USER CODE END ADC2_Init 2 */
 
 }
 
@@ -643,9 +425,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
-	encoders.update_encoder_counts();
-}
+
 /* USER CODE END 4 */
 
 /**

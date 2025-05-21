@@ -32,7 +32,7 @@ inline void floodfill() {
         queue.dequeue();
         int newCost = maze.getDistance(pos) + 1;
 
-        Cell* neighbors = maze.getNeighborCells(pos);
+        Cell* neighbors = maze.get_neighbor_cells(pos);
         for (int i = 0; i < 4; ++i) {
             Cell& neighbor = neighbors[i];
             if (!neighbor.valid || neighbor.blocked) continue;

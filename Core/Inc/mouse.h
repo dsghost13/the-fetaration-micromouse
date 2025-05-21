@@ -19,9 +19,9 @@ struct Mouse {
     	search_mode = false;
     }
 
-    void move_forward() {
-		pos.x += NEIGHBOR_DISTANCES[dir][0];
-		pos.y += NEIGHBOR_DISTANCES[dir][1];
+    void move_forward(int count = 1) {
+		pos.x += NEIGHBOR_DISTANCES[dir][0] * count;
+		pos.y += NEIGHBOR_DISTANCES[dir][1] * count;
     }
 
     void turn_ccw(int turns = 1) {
