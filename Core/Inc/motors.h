@@ -149,6 +149,8 @@
 
 		float m_velocity;
 		float m_omega;
+		
+		float oldAngle;
 
 		bool m_feedforward_enabled;
 		bool m_controller_output_enabled;
