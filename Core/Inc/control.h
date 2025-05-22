@@ -19,7 +19,7 @@ float get_steering_adjustment() {
     float error = 0.0f;
 
     if (has_left_wall && has_right_wall) {
-        error = left_dist - right_dist;
+        error = (left_dist - right_dist) / 2;
     } else if (has_left_wall) {
         error = left_dist - DESIRED_WALL_DISTANCE_MM;
     } else if (has_right_wall) {
