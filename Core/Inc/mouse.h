@@ -2,6 +2,7 @@
 
 #include "maze.h"
 
+class Mouse;
 extern Mouse mouse;
 
 struct Mouse {

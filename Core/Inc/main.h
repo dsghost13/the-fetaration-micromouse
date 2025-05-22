@@ -138,6 +138,12 @@ extern const int MOTOR_MAX_PWM;
 
 extern const int MAZE_SIZE;
 extern const int MAX_COST;
+
+extern const float SIDE_WALL_THRESHOLD_MM;
+extern const float FRONT_WALL_THRESHOLD_MM;
+extern const float DESIRED_WALL_DISTANCE_MM;
+extern const float STEERING_KP;
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

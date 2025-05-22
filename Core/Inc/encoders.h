@@ -17,7 +17,7 @@ extern "C" {
 
 		uint32_t right_count = 0;
 
-		void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) {
+		void update(TIM_HandleTypeDef *htim) {
 		    if (htim->Instance == TIM3) {
 		        left_count = __HAL_TIM_GET_COUNTER(htim);
 

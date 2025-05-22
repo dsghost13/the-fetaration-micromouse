@@ -98,6 +98,10 @@ public:
         return profile_rot.get_current_speed();
     }
 
+    MotionType get_motion_type() const {
+        return m_state;
+    }
+
 private:
     void queue_command(const MotionCommand& cmd) {
         m_queue.push(cmd);
@@ -126,7 +130,7 @@ private:
         }
     }
 
-    void baacktrack() {
+    void backtrack() {
 
     }
 

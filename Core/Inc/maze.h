@@ -1,8 +1,8 @@
 #pragma once
 
-#include "API.h"
 #include "main.h"
 #include "mouse.h"
+#include "sensors.h"
 
 #include <string>
 #include <cmath>
@@ -111,9 +111,9 @@ public:
     }
 
     void update_walls() {
-        if (API::wallFront()) set_wall(0);
-        if (API::wallLeft()) set_wall(1);
-        if (API::wallRight()) set_wall(3);
+        if (sensors.wall_front()) set_wall(0);
+        if (sensors.wall_left()) set_wall(1);
+        if (sensors.wall_right()) set_wall(3);
     }
 
     void update_maze() {
@@ -122,13 +122,11 @@ public:
         int turns = (bestCell.dir - mouse.dir + 4) % 4;
 
         switch (turns) {
-            case 1: rotateCCW(); API::turnLeft(); break;
-            case 2: rotateCCW(2); API::turnRight(); API::turnRight(); break;
-            case 3: rotateCCW(3); API::turnRight(); break;
+        	case 0: mouse.move_forward();
+            case 1: rotateCCW(); break;
+            case 2: rotateCCW(2);API::turnRight(); break;
+            case 3: rotateCCW(3); break;
         }
-
-        moveForward();
-        API::moveForward();
     }
 
     Coord* getGoalCells() const {

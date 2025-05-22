@@ -26,8 +26,8 @@ Core/Src/main.o: ../Core/Src/main.cpp ../Core/Inc/main.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h \
  ../Core/Inc/battery.h ../Core/Inc/main.h ../Core/Inc/encoders.h \
- ../Core/Inc/maze.h ../Core/Inc/queue.h ../Core/Inc/motors.h \
- ../Core/Inc/mouse.h ../Core/Inc/profile.h ../Core/Inc/sensors.h
+ ../Core/Inc/maze.h ../Core/Inc/mouse.h ../Core/Inc/motors.h \
+ ../Core/Inc/profile.h ../Core/Inc/sensors.h
 ../Core/Inc/main.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h:
 ../Core/Inc/stm32f1xx_hal_conf.h:
@@ -59,8 +59,7 @@ Core/Src/main.o: ../Core/Src/main.cpp ../Core/Inc/main.h \
 ../Core/Inc/main.h:
 ../Core/Inc/encoders.h:
 ../Core/Inc/maze.h:
-../Core/Inc/queue.h:
-../Core/Inc/motors.h:
 ../Core/Inc/mouse.h:
+../Core/Inc/motors.h:
 ../Core/Inc/profile.h:
 ../Core/Inc/sensors.h:

@@ -2,7 +2,6 @@
 
 #include "maze.h"
 #include "queue.h"
-#include "API.h"
 #include <string>
 
 // Assume this is defined somewhere else
@@ -23,7 +22,6 @@ inline void floodfill() {
         Coord goal = maze.getGoalCells()[i];
         maze.setDistance(goal, 0);
         queue.enqueue(goal);
-        API::setText(goal.x, goal.y, std::to_string(0));
     }
 
     // Begin floodfill
@@ -41,7 +39,6 @@ inline void floodfill() {
             if (newCost < maze.getDistance(np)) {
                 maze.setDistance(np, newCost);
                 queue.enqueue(np);
-                API::setText(np.x, np.y, std::to_string(newCost));
             }
         }
 

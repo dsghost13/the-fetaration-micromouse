@@ -33,12 +33,6 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-typedef enum {
-	DIST_L,
-	DIST_R,
-	DIST_FL,
-	DIST_FR
-} dist_t;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -83,6 +77,12 @@ const int MOTOR_MAX_PWM = 100;
 
 const int MAZE_SIZE = 16;
 const int MAX_COST = 255;
+
+const float SIDE_WALL_THRESHOLD_MM = 150.0f;
+const float FRONT_WALL_THRESHOLD_MM = 160.0f;
+extern const float DESIRED_WALL_DISTANCE_MM = 100.0f;;
+const float STEERING_KP = 0.03f;
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -99,10 +99,6 @@ TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
 
 /* USER CODE BEGIN PV */
-uint16_t dist_L;
-uint16_t dist_R;
-uint16_t dist_FL;
-uint16_t dist_FR;
 
 Encoders encoders = Encoders();
 /* USER CODE END PV */
@@ -122,7 +118,7 @@ static void MX_ADC2_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) {
-    encoders.HAL_TIM_IC_CaptureCallback(htim);
+    encoders.update(htim);
 }
 
 static void ADC1_Select_CH4(void) {
@@ -172,58 +168,6 @@ static void ADC1_Select_CH9(void) {
 		Error_Handler();
 	}
 }
-
-uint16_t measure_dist(dist_t dist) {
-	GPIO_TypeDef* emitter_port;
-	uint16_t emitter_pin;
-	GPIO_TypeDef* receiver_port;
-	uint16_t receiver_pin;
-
-	switch (dist) {
-		case DIST_L:
-			emitter_port	= EMIT_L_GPIO_Port;
-			emitter_pin		= EMIT_L_Pin;
-			receiver_port	= RECIV_L_GPIO_Port;
-			receiver_pin	= RECIV_L_Pin;
-			ADC1_Select_CH8();
-			break;
-		case DIST_R:
-			emitter_port	= EMIT_R_GPIO_Port;
-			emitter_pin		= EMIT_R_Pin;
-			receiver_port	= RECIV_R_GPIO_Port;
-			receiver_pin	= RECIV_R_Pin;
-			ADC1_Select_CH5();
-			break;
-		case DIST_FL:
-			emitter_port	= EMIT_FL_GPIO_Port;
-			emitter_pin		= EMIT_FL_Pin;
-			receiver_port	= RECIV_FL_GPIO_Port;
-			receiver_pin	= RECIV_FL_Pin;
-			ADC1_Select_CH9();
-			break;
-		case DIST_FR:
-			emitter_port	= EMIT_FR_GPIO_Port;
-			emitter_pin		= EMIT_FR_Pin;
-			receiver_port	= RECIV_FR_GPIO_Port;
-			receiver_pin	= RECIV_FR_Pin;
-			ADC1_Select_CH4();
-			break;
-		default:
-			break;
-	}
-
-	HAL_GPIO_WritePin(emitter_port, emitter_pin, GPIO_PIN_SET);
-	HAL_Delay(5);
-
-	HAL_ADC_Start(&hadc1);
-	HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
-	uint16_t adc_val = HAL_ADC_GetValue(&hadc1);
-	HAL_ADC_Stop(&hadc1);
-
-	HAL_GPIO_WritePin(emitter_port, emitter_pin, GPIO_PIN_RESET);
-
-	return adc_val;
-}
 /* USER CODE END 0 */
 
 /**
@@ -268,19 +212,12 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-
-
-
   while (1)
   {
-	dist_L = measure_dist(DIST_L);
-	dist_R = measure_dist(DIST_R);
-	dist_FR = measure_dist(DIST_FR);
-	dist_FL = measure_dist(DIST_FL);
-//	HAL_Delay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	sensors.update();
   }
   /* USER CODE END 3 */
 }
