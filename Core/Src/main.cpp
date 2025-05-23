@@ -28,11 +28,13 @@
 #include "mouse.h"
 #include "profile.h"
 #include "sensors.h"
-/* USER CODE END Includes
- *  */
+#include "systick.h"
+#include "trajectory.h"
+/* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -63,26 +65,41 @@ const float SENSING_POSITION = 175.0;
 const float MAX_ADC = 4095.0;
 const float VREFINT = 1.2;
 
-const int SEARCH_SPEED = 400;
-const int SEARCH_ACCELERATION = 1500;
-const int SMOOTH_TURN_SPEED = 50;
-const int FAST_TURN_SPEED = 350;
-const int FAST_SPEED = 550;
-const int FAST_ACCELERATION = 1500;
+//const int SEARCH_SPEED = 400;
+//const int SEARCH_ACCELERATION = 1500;
+//const int SMOOTH_TURN_SPEED = 50;
+//const int FAST_TURN_SPEED = 350;
+//const int FAST_SPEED = 550;
+//const int FAST_ACCELERATION = 1500;
+
+const int SEARCH_FWD_SPEED         = 200;
+const int SEARCH_FWD_ACCELERATION  = 800;
+const int SEARCH_TURN_SPEED        = 90;
+const int SEARCH_TURN_ACCELERATION = 720;
+const int SMOOTH_FWD_SPEED         = 300;
+const int SMOOTH_FWD_ACCELERATION  = 1000;
+const int FAST_FWD_SPEED           = 500;
+const int FAST_FWD_ACCELERATION    = 1500;
+const int FAST_TURN_SPEED          = 180;
+const int FAST_TURN_ACCELERATION   = 1440;
 
 const int NOM_FORWARD = 200;
 const int NOM_DIAGONAL = 100;
 
 const int MOTOR_MAX_PWM = 100;
 
-const int MAZE_SIZE = 16;
-const int MAX_COST = 255;
-
 const float SIDE_WALL_THRESHOLD_MM = 150.0f;
 const float FRONT_WALL_THRESHOLD_MM = 160.0f;
-extern const float DESIRED_WALL_DISTANCE_MM = 100.0f;;
+const float DESIRED_WALL_DISTANCE_MM = 100.0f;;
 const float STEERING_KP = 0.03f;
 
+const float FWD_KP = 1;
+const float FWD_KD = 1;
+const float ROT_KP = 1;
+const float ROT_KD = 1;
+const float SPEED_FF = 1;
+const float BIAS_FF = 1;
+const float ACC_FF = 1;
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -92,15 +109,21 @@ const float STEERING_KP = 0.03f;
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
-ADC_HandleTypeDef hadc2;
 
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
 
 /* USER CODE BEGIN PV */
-
+Battery battery = Battery();
 Encoders encoders = Encoders();
+Maze maze = Maze();
+Motors motors = Motors();
+Mouse mouse = Mouse();
+MotionProfile motion_profile = MotionProfile();
+Sensors sensors = Sensors();
+Systick systick = Systick();
+MotionController motion_controler = MotionController();
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -110,7 +133,6 @@ static void MX_TIM2_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM4_Init(void);
-static void MX_ADC2_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -119,54 +141,6 @@ static void MX_ADC2_Init(void);
 /* USER CODE BEGIN 0 */
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) {
     encoders.update(htim);
-}
-
-static void ADC1_Select_CH4(void) {
-	ADC_ChannelConfTypeDef sConfig = {0};
-
-	sConfig.Channel = ADC_CHANNEL_4;
-	sConfig.Rank = ADC_REGULAR_RANK_1;
-	sConfig.SamplingTime = ADC_SAMPLETIME_7CYCLES_5;
-	if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-	{
-		Error_Handler();
-	}
-}
-
-static void ADC1_Select_CH5(void) {
-	ADC_ChannelConfTypeDef sConfig = {0};
-
-	sConfig.Channel = ADC_CHANNEL_5;
-	sConfig.Rank = ADC_REGULAR_RANK_1;
-	sConfig.SamplingTime = ADC_SAMPLETIME_7CYCLES_5;
-	if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-	{
-		Error_Handler();
-	}
-}
-
-static void ADC1_Select_CH8(void) {
-	ADC_ChannelConfTypeDef sConfig = {0};
-
-	sConfig.Channel = ADC_CHANNEL_8;
-	sConfig.Rank = ADC_REGULAR_RANK_1;
-	sConfig.SamplingTime = ADC_SAMPLETIME_7CYCLES_5;
-	if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-	{
-		Error_Handler();
-	}
-}
-
-static void ADC1_Select_CH9(void) {
-	ADC_ChannelConfTypeDef sConfig = {0};
-
-	sConfig.Channel = ADC_CHANNEL_9;
-	sConfig.Rank = ADC_REGULAR_RANK_1;
-	sConfig.SamplingTime = ADC_SAMPLETIME_7CYCLES_5;
-	if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-	{
-		Error_Handler();
-	}
 }
 /* USER CODE END 0 */
 
@@ -203,7 +177,6 @@ int main(void)
   MX_ADC1_Init();
   MX_TIM3_Init();
   MX_TIM4_Init();
-  MX_ADC2_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim2);
   encoders.initialize();
@@ -217,7 +190,6 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	sensors.update();
   }
   /* USER CODE END 3 */
 }
@@ -312,53 +284,6 @@ static void MX_ADC1_Init(void)
   /* USER CODE BEGIN ADC1_Init 2 */
 
   /* USER CODE END ADC1_Init 2 */
-
-}
-
-/**
-  * @brief ADC2 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_ADC2_Init(void)
-{
-
-  /* USER CODE BEGIN ADC2_Init 0 */
-
-  /* USER CODE END ADC2_Init 0 */
-
-  ADC_ChannelConfTypeDef sConfig = {0};
-
-  /* USER CODE BEGIN ADC2_Init 1 */
-
-  /* USER CODE END ADC2_Init 1 */
-
-  /** Common config
-  */
-  hadc2.Instance = ADC2;
-  hadc2.Init.ScanConvMode = ADC_SCAN_DISABLE;
-  hadc2.Init.ContinuousConvMode = DISABLE;
-  hadc2.Init.DiscontinuousConvMode = DISABLE;
-  hadc2.Init.ExternalTrigConv = ADC_SOFTWARE_START;
-  hadc2.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc2.Init.NbrOfConversion = 1;
-  if (HAL_ADC_Init(&hadc2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure Regular Channel
-  */
-  sConfig.Channel = ADC_CHANNEL_9;
-  sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
-  if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN ADC2_Init 2 */
-
-  /* USER CODE END ADC2_Init 2 */
 
 }
 
@@ -546,7 +471,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, EMIT_R_Pin|EMIT_L_Pin|EMIT_FL_Pin|MR_FWD_Pin
-                          |ML_BWD_Pin|MR_BWD_Pin|EMIT_FR_Pin, GPIO_PIN_RESET);
+                          |ML_BWD_Pin|MR_BWD_Pin|EMIT_FR_Pin|BUZZER_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(ML_FWD_GPIO_Port, ML_FWD_Pin, GPIO_PIN_RESET);
@@ -574,14 +499,27 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(ML_FWD_GPIO_Port, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : BUZZER_Pin */
+  GPIO_InitStruct.Pin = BUZZER_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(BUZZER_GPIO_Port, &GPIO_InitStruct);
+
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
   /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
-	encoders.update_encoder_counts();
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
+{
+	HAL_IncTick();
+
+	HAL_TIM_IC_CaptureCallback(&htim3);
+	HAL_TIM_IC_CaptureCallback(&htim4);
+
+	sensors.update();
 }
 /* USER CODE END 4 */
 
@@ -616,3 +554,4 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
+

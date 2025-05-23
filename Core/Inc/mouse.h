@@ -1,5 +1,6 @@
 #pragma once
 
+#include "coord.h"
 #include "maze.h"
 
 class Mouse;
@@ -11,6 +12,12 @@ struct Mouse {
     bool search_mode;
 
     Mouse() : pos(0, 0), dir(NORTH), search_mode(true) {}
+
+    void reset() {
+    	pos.x = 0;
+    	pos.y = 0;
+    	dir = NORTH;
+    }
 
     void set_mode_search() {
     	search_mode = true;
@@ -31,14 +38,5 @@ struct Mouse {
 
     bool in_search_mode() const {
     	return search_mode;
-    }
-
-    bool at_goal() const {
-        for (int i = 0; i < 4; ++i) {
-            if (goalPos[i] == pos) {
-            	return true;
-            }
-        }
-        return false;
     }
 };

@@ -6,6 +6,8 @@
 
 extern MotionController motion_controller;
 extern Motors motors;
+
+class Systick;
 extern Systick systick;
 
 struct Systick {

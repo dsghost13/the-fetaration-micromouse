@@ -1,14 +1,16 @@
 #pragma once
 
+#include "coord.h"
 #include "maze.h"
-#include "queue.h"
+
+#include <queue>
 #include <string>
 
 // Assume this is defined somewhere else
 extern Maze maze;
 
 inline void floodfill() {
-    Queue queue;
+    std::queue<Coord> queue;
 
     // Initialize all distances to MAX_COST
     for (int x = 0; x < MAZE_SIZE; ++x) {
@@ -21,13 +23,13 @@ inline void floodfill() {
     for (int i = 0; i < 4; ++i) {
         Coord goal = maze.getGoalCells()[i];
         maze.setDistance(goal, 0);
-        queue.enqueue(goal);
+        queue.push(goal);
     }
 
     // Begin floodfill
-    while (!queue.is_empty()) {
-        Coord pos = queue.next();
-        queue.dequeue();
+    while (!queue.empty()) {
+        Coord pos = queue.front();
+        queue.pop();
         int newCost = maze.getDistance(pos) + 1;
 
         Cell* neighbors = maze.get_neighbor_cells(pos);
@@ -38,7 +40,7 @@ inline void floodfill() {
             Coord np = neighbor.pos;
             if (newCost < maze.getDistance(np)) {
                 maze.setDistance(np, newCost);
-                queue.enqueue(np);
+                queue.push(np);
             }
         }
 

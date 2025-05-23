@@ -9,20 +9,20 @@ extern "C" {
 	extern TIM_HandleTypeDef htim3;
 	extern TIM_HandleTypeDef htim4;
 
+	class Encoders;
+	extern Encoders encoders;
+
 	class Encoders {
 	public:
 		Encoders() : m_enc_left(0), m_enc_right(0), m_prev_enc_left(0), m_prev_enc_right(0), m_left_distance(0.0), m_right_distance(0.0) {}
 
 		uint32_t left_count = 0;
-
 		uint32_t right_count = 0;
 
-		void update(TIM_HandleTypeDef *htim) {
+		void update(TIM_HandleTypeDef* htim) {
 		    if (htim->Instance == TIM3) {
 		        left_count = __HAL_TIM_GET_COUNTER(htim);
-
 		    } else if (htim->Instance == TIM4) {
-
 		        right_count = __HAL_TIM_GET_COUNTER(htim);
 		    }
 		}
@@ -34,8 +34,8 @@ extern "C" {
 		}
 
 		void reset() {
-//			__HAL_TIM_SET_COUNTER(&htim3, 1);
-//			__HAL_TIM_SET_COUNTER(&htim4, 1);
+			__HAL_TIM_SET_COUNTER(&htim3, 0);
+			__HAL_TIM_SET_COUNTER(&htim4, 0);
 
 			m_enc_left = 0;
 			m_enc_right = 0;
@@ -67,8 +67,8 @@ extern "C" {
 		}
 
 		void update_encoder_counts() {
-			m_enc_left = left_count;
-			m_enc_right = right_count;
+			m_enc_left = (int16_t)__HAL_TIM_GET_COUNTER(&htim3);
+			m_enc_right = (int16_t)__HAL_TIM_GET_COUNTER(&htim4);
 		}
 
 		int16_t get_left_encoder_count() {
@@ -88,6 +88,8 @@ extern "C" {
 		float m_left_distance;
 		float m_right_distance;
 	};
+
+
 
 #ifdef __cplusplus
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "coord.h"
 #include "main.h"
 #include "mouse.h"
 #include "sensors.h"
@@ -8,32 +9,13 @@
 #include <cmath>
 #include <cstdint>
 
+class Maze;
+extern Maze maze;
+
 extern Mouse mouse;
 
-enum Direction {
-    NORTH = 0,
-    WEST  = 1,
-    SOUTH = 2,
-    EAST  = 3
-};
-
-const int NEIGHBOR_DISTANCES[4][2] = {
-    {0, 1},
-    {-1, 0},
-    {0, -1},
-    {1, 0}
-};
-
-struct Coord {
-    int x;
-    int y;
-
-    Coord(int x = 0, int y = 0) : x(x), y(y) {}
-
-    bool operator==(const Coord& other) const {
-        return x == other.x && y == other.y;
-    }
-};
+#define MAZE_SIZE 16
+#define MAX_COST 255
 
 struct Cell {
     Coord pos;
@@ -47,8 +29,32 @@ struct Cell {
 
 class Maze {
 public:
+	Coord* goalPos;
+
+    bool at_goal() const {
+        for (int i = 0; i < 4; ++i) {
+            if (goalPos[i] == mouse.pos) {
+            	return true;
+            }
+        }
+        return false;
+    }
+
+	void set_goal_cells(bool backtracking = false) {
+		if (backtracking) {
+			goalPos = new Coord[1];
+			goalPos[0] = Coord(0, 0);
+		} else {
+			goalPos = new Coord[4];
+			goalPos[0] = Coord(7, 7);
+			goalPos[1] = Coord(7, 8);
+			goalPos[2] = Coord(8, 7);
+			goalPos[3] = Coord(8, 8);
+		}
+	}
+
     Maze() {
-        setGoalCells();
+        set_goal_cells();
     }
 
     ~Maze() {
@@ -116,19 +122,6 @@ public:
         if (sensors.wall_right()) set_wall(3);
     }
 
-    void update_maze() {
-        update_walls();
-        Cell bestCell = get_best_cell();
-        int turns = (bestCell.dir - mouse.dir + 4) % 4;
-
-        switch (turns) {
-        	case 0: mouse.move_forward();
-            case 1: rotateCCW(); break;
-            case 2: rotateCCW(2);API::turnRight(); break;
-            case 3: rotateCCW(3); break;
-        }
-    }
-
     Coord* getGoalCells() const {
         return goalPos;
     }
@@ -159,16 +152,6 @@ public:
     int distances[MAZE_SIZE][MAZE_SIZE];
 
 private:
-    Coord* goalPos;
-
-    void setGoalCells() {
-        goalPos = new Coord[4];
-        goalPos[0] = Coord(7, 7);
-        goalPos[1] = Coord(7, 8);
-        goalPos[2] = Coord(8, 7);
-        goalPos[3] = Coord(8, 8);
-    }
-
     char dirToChar(int dir) {
         switch (dir) {
             case 0: return 'n';

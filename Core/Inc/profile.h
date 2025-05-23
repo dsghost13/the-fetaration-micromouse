@@ -117,7 +117,8 @@ extern "C" {
 		float m_current_position;
 
 		float get_braking_distance(float current_speed, float final_speed, float acceleration) {
-			return (current_speed * current_speed - final_speed * final_speed) / (2.0f * acceleration);
+		    if (acceleration == 0.0f) return 0.0f;
+		    return (current_speed * current_speed - final_speed * final_speed) / (2.0f * acceleration);
 		}
 	};
 

@@ -61,7 +61,7 @@
 			float acc = (speed - oldSpeed) * LOOP_FREQUENCY;
 			oldSpeed = speed;
 			float accFF = ACC_FF * acc;
-			leftFF =+ accFF;
+			leftFF += accFF;
 			return leftFF;
 		}
 
@@ -71,11 +71,11 @@
 			float acc = (speed - oldSpeed) * LOOP_FREQUENCY;
 			oldSpeed = speed;
 			float accFF = ACC_FF * acc;
-			rightFF =+ accFF;
+			rightFF += accFF;
 			return rightFF;
 		}
 
-		float update_controllers(float velocity, float omega, float steering_adjustment) {
+		void update_controllers(float velocity, float omega, float steering_adjustment) {
 			m_velocity = velocity;
 			m_omega = omega;
 			float pos_output = position_controller();

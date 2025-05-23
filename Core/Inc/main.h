@@ -96,6 +96,8 @@ void Error_Handler(void);
 #define MR_ENC_B_GPIO_Port GPIOB
 #define MR_ENC_A_Pin GPIO_PIN_7
 #define MR_ENC_A_GPIO_Port GPIOB
+#define BUZZER_Pin GPIO_PIN_8
+#define BUZZER_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 extern const float LOOP_FREQUENCY;
@@ -124,25 +126,35 @@ extern const float SENSING_POSITION;
 extern const float MAX_ADC;
 extern const float VREFINT;
 
-extern const int SEARCH_SPEED;
-extern const int SEARCH_ACCELERATION;
-extern const int SMOOTH_TURN_SPEED;
+extern const int SEARCH_FWD_SPEED;
+extern const int SEARCH_FWD_ACCELERATION;
+extern const int SEARCH_TURN_SPEED;
+extern const int SEARCH_TURN_ACCELERATION;
+extern const int SMOOTH_FWD_SPEED;
+extern const int SMOOTH_FWD_ACCELERATION;
+extern const int FAST_FWD_SPEED;
+extern const int FAST_FWD_ACCELERATION;
 extern const int FAST_TURN_SPEED;
-extern const int FAST_SPEED;
-extern const int FAST_ACCELERATION;
+extern const int FAST_TURN_ACCELERATION;
 
 extern const int NOM_FORWARD;
 extern const int NOM_DIAGONAL;
 
 extern const int MOTOR_MAX_PWM;
 
-extern const int MAZE_SIZE;
-extern const int MAX_COST;
-
 extern const float SIDE_WALL_THRESHOLD_MM;
 extern const float FRONT_WALL_THRESHOLD_MM;
 extern const float DESIRED_WALL_DISTANCE_MM;
 extern const float STEERING_KP;
+
+extern const float FWD_KP;
+extern const float FWD_KD;
+extern const float ROT_KP;
+extern const float ROT_KD;
+extern const float SPEED_FF;
+extern const float BIAS_FF;
+extern const float ACC_FF;
+
 
 /* USER CODE END Private defines */
 
