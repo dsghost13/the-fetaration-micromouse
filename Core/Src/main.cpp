@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include "battery.h"
 #include "encoders.h"
+#include "floodfill.h"
 #include "maze.h"
 #include "motors.h"
 #include "mouse.h"
@@ -39,38 +40,31 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-const float LOOP_FREQUENCY = 1000.0;
-const float LOOP_INTERVAL = 1.0 / LOOP_FREQUENCY;
+const float LOOP_FREQUENCY = 1000.0f;
+const float LOOP_INTERVAL = 1.0f / LOOP_FREQUENCY;
 
-const float WHEEL_DIAMETER = 32.5;
-const float ENCODER_PULSES = 12.0;
-const float GEAR_RATIO = 50.0;
+const float WHEEL_DIAMETER = 32.5f;
+const float ENCODER_PULSES = 12.0f;
+const float GEAR_RATIO = 30.0f;
 
-const float MOUSE_RADIUS = 36.7;
-const float TRACK_WIDTH = 10.0;
+const float MOUSE_RADIUS = 36.7f;
+const float TRACK_WIDTH = 72.0f;
 
-const float PI = 3.141592653589793238462643383;
+const float PI = 3.14159265358979323846f;
 const float MM_PER_COUNT = PI * WHEEL_DIAMETER / (ENCODER_PULSES * GEAR_RATIO);
-const float MM_PER_COUNT_RIGHT = MM_PER_COUNT;
-const float MM_PER_COUNT_LEFT = MM_PER_COUNT;
-const float DEG_PER_MM_DIF = (180.0 / (2 * MOUSE_RADIUS * PI));
+// const float MM_PER_COUNT_RIGHT = MM_PER_COUNT;
+// const float MM_PER_COUNT_LEFT = MM_PER_COUNT;
+const float DEG_PER_MM_DIF = (180.0f / (PI * TRACK_WIDTH));
 
-const float FULL_CELL_MM = 185.0;
-const float HALF_CELL = FULL_CELL_MM / 2;
-//const float DIAG_CELL = sqrt(2 * HALF_CELL * HALF_CELL);
-const float BACK_TO_MOTOR = 32.23;
-const float BACK_WALL_TO_CENTER = HALF_CELL - BACK_TO_MOTOR;
-const float SENSING_POSITION = 175.0;
+const float FULL_CELL_MM = 180.0f;
+const float HALF_CELL = FULL_CELL_MM / 2.0f;
+// const float BACK_TO_MOTOR = 32.0f;
+// const float BACK_WALL_TO_CENTER = HALF_CELL - BACK_TO_MOTOR;
+// const float SENSING_POSITION = 170.0f;
 
-const float MAX_ADC = 4095.0;
-const float VREFINT = 1.2;
-
-//const int SEARCH_SPEED = 400;
-//const int SEARCH_ACCELERATION = 1500;
-//const int SMOOTH_TURN_SPEED = 50;
-//const int FAST_TURN_SPEED = 350;
-//const int FAST_SPEED = 550;
-//const int FAST_ACCELERATION = 1500;
+const int MOTOR_MAX_PWM = 100;
+const float MAX_ADC = 4095.0f;
+const float VREFINT = 1.2f;
 
 const int SEARCH_FWD_SPEED         = 200;
 const int SEARCH_FWD_ACCELERATION  = 800;
@@ -78,28 +72,25 @@ const int SEARCH_TURN_SPEED        = 90;
 const int SEARCH_TURN_ACCELERATION = 720;
 const int SMOOTH_FWD_SPEED         = 300;
 const int SMOOTH_FWD_ACCELERATION  = 1000;
-const int FAST_FWD_SPEED           = 500;
-const int FAST_FWD_ACCELERATION    = 1500;
-const int FAST_TURN_SPEED          = 180;
-const int FAST_TURN_ACCELERATION   = 1440;
-
-const int NOM_FORWARD = 200;
-const int NOM_DIAGONAL = 100;
-
-const int MOTOR_MAX_PWM = 100;
+const int FAST_FWD_SPEED           = 600;
+const int FAST_FWD_ACCELERATION    = 2000;
+const int FAST_TURN_SPEED          = 270;
+const int FAST_TURN_ACCELERATION   = 1800;
 
 const float SIDE_WALL_THRESHOLD_MM = 150.0f;
-const float FRONT_WALL_THRESHOLD_MM = 160.0f;
-const float DESIRED_WALL_DISTANCE_MM = 100.0f;;
+const float FRONT_WALL_THRESHOLD_MM = 130.0f;
+const float DESIRED_WALL_DISTANCE_MM = 90.0f;
 const float STEERING_KP = 0.03f;
+const float STEERING_KD = 0.001f;
 
-const float FWD_KP = 1;
-const float FWD_KD = 1;
-const float ROT_KP = 1;
-const float ROT_KD = 1;
-const float SPEED_FF = 1;
-const float BIAS_FF = 1;
-const float ACC_FF = 1;
+const float FWD_KP = 2.5f;
+const float FWD_KD = 0.1f;
+const float ROT_KP = 2.5f;
+const float ROT_KD = 0.1f;
+const float SPEED_FF = 1.0f;
+const float BIAS_FF = 1.0f;
+const float ACC_FF = 0.1f;
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -120,7 +111,8 @@ Encoders encoders = Encoders();
 Maze maze = Maze();
 Motors motors = Motors();
 Mouse mouse = Mouse();
-MotionProfile motion_profile = MotionProfile();
+MotionProfile profile_fwd = MotionProfile();
+MotionProfile profile_rot = MotionProfile();
 Sensors sensors = Sensors();
 Systick systick = Systick();
 MotionController motion_controler = MotionController();
@@ -520,6 +512,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 	HAL_TIM_IC_CaptureCallback(&htim4);
 
 	sensors.update();
+	systick.update();
 }
 /* USER CODE END 4 */
 

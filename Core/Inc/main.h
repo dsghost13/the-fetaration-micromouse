@@ -146,6 +146,7 @@ extern const float SIDE_WALL_THRESHOLD_MM;
 extern const float FRONT_WALL_THRESHOLD_MM;
 extern const float DESIRED_WALL_DISTANCE_MM;
 extern const float STEERING_KP;
+extern const float STEERING_KD;
 
 extern const float FWD_KP;
 extern const float FWD_KD;
